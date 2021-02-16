@@ -18,37 +18,47 @@ export const dmMachine: MachineConfig<SDSContext, any, SDSEvent> = ({
             }
         },
         welcome: {
-            initial: 'prompt',
+            initial: "prompt",
+            on: { ENDSPEECH: "who" },
+            states: {
+                prompt: { entry: say("Let's create an appointment") }
+            }
+        },
+        who: {
+            initial: "prompt",
             on: {
-                RECOGNISED: [
-                    { target: 'stop', cond: (context) => context.recResult === 'stop' },
-                    { target: 'repaint' }]
+                RECOGNISED: [{
+                    cond: (context) => grammar[context.recResult].person !== undefined,
+                    actions: assign((context) => { return { person: grammar[context.recResult].person } }),
+                    target: "day"
+
+                },
+                { target: ".nomatch" }]
             },
             states: {
                 prompt: {
-                    entry: say("Tell me the colour"),
-                    on: { ENDSPEECH: 'ask' }
+                    entry: say("Who are you meeting with?"),
+                    on: { ENDSPEECH: "ask" }
                 },
                 ask: {
-                    entry: send('LISTEN'),
+                    entry: listen()
                 },
+                nomatch: {
+                    entry: say("Sorry I don't know them"),
+                    on: { ENDSPEECH: "prompt" }
+                }
             }
         },
-        stop: {
-            entry: say("Ok"),
-            always: 'init'
-        },
-        repaint: {
-            initial: 'prompt',
+        day: {
+            initial: "prompt",
+            on: { ENDSPEECH: "init" },
             states: {
                 prompt: {
-                    entry: sayColour,
-                    on: { ENDSPEECH: 'repaint' }
+                    entry: send((context) => ({
+                        type: "SPEAK",
+                        value: `OK. ${context.person}. On which day is your meeting?`
+                    }))
                 },
-                repaint: {
-                    entry: 'changeColour',
-                    always: '#root.dm.welcome'
-                }
             }
         }
     }
