@@ -14,13 +14,21 @@ interface SDSContext {
     Input: string,
     query: string,
     goback: string,
+    count: number,
+    object: string,
+    action: string,
+    player: number,
+    player2: number,
+    Qnumber: number,
 
 }
 
 type SDSEvent =
     | { type: 'CLICK' }
+    | { type: 'MAXSPEECH' }
     | { type: 'RECOGNISED' }
     | { type: 'ASRRESULT', value: string }
     | { type: 'ENDSPEECH' }
     | { type: 'LISTEN' }
     | { type: 'SPEAK', value: string };
+    
